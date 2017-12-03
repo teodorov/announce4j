@@ -1,0 +1,79 @@
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+group = 'fr.ensta-bretagne'
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from 'build/docs/javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+artifacts {
+    archives jar
+
+    archives javadocJar
+    archives sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+signArchives.onlyIf {
+    project.hasProperty('signing.keyId') && project.hasProperty('signing.password') && project.hasProperty('signing.secretKeyRingFile')
+}
+
+def doUploadArchives = project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')
+if(doUploadArchives) {
+    uploadArchives {
+        repositories.mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+              authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots') {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            pom.project {
+                name 'announce4j'
+                packaging 'jar'
+                description 'Announcements framework for Java'
+                url 'https://github.com/teodorov/announce4j'
+               
+                scm {
+                    url 'scm:git@github.com:teodorov/announce4j.git'
+                    connection 'scm:git@github.com:teodorov/announce4j.git'
+                    developerConnection 'scm:git@github.com:teodorov/announce4j.git'
+                }
+               
+                licenses {
+                    license {
+                        name "The MIT License"
+                        url "http://www.opensource.org/licenses/MIT"
+                        distribution 'repo'
+                    }
+                }
+               
+                developers {
+                    developer {
+                        name 'Ciprian Teodorov'
+                    }
+                }
+            }
+        }
+    }
+}
+
+uploadArchives.onlyIf { doUploadArchives }
