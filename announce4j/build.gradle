@@ -1,7 +1,7 @@
 apply plugin: 'maven'
 apply plugin: 'signing'
 
-group = 'fr.ensta-bretagne'
+group = 'io.github.teodorov'
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
