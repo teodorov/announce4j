@@ -68,6 +68,7 @@ if(doUploadArchives) {
                
                 developers {
                     developer {
+                        id 'cipt'
                         name 'Ciprian Teodorov'
                     }
                 }
